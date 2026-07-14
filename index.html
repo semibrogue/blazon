@@ -49,7 +49,7 @@
 <div style="max-width:660px;margin:0 auto;padding:0.5rem 0;">
   <div id="intro" style="text-align:center;padding:1.5rem 1rem;">
     <div style="font-family:var(--font-voice);font-size:26px;color:var(--text-primary);letter-spacing:0.04em;">Blazon</div>
-    <p style="color:var(--text-secondary);font-size:14px;max-width:460px;margin:0.75rem auto 1.5rem;line-height:1.6;">Read the blazon, then choose the shield whose beast matches. Rise from page to king of arms &#8212; and beyond, to Garter and the Earl Marshal &#8212; through guardant and reguardant heads, counterchanged fields, ornate lines of partition, forked and knotted tails, paired beasts, griffins, coronets, furs of ermine and vair, and fields sown with bezants. Three misreadings end your career; fifty true readings earn you the accolade.</p>
+    <p style="color:var(--text-secondary);font-size:14px;max-width:460px;margin:0.75rem auto 1.5rem;line-height:1.6;">Read the blazon, then choose the shield whose beast matches. Rise from page to king of arms &#8212; and beyond, to Garter and the Earl Marshal &#8212; through guardant and reguardant heads, ordinaries and roundels, counterchanged fields, ornate lines of partition, forked and knotted tails, heads erased and couped, paired beasts, griffins and wyverns, coronets, furs of ermine and vair, and fields sown with bezants. Three misreadings end your career; fifty true readings earn you the accolade.</p>
     <div id="records" style="font-size:12px;color:var(--text-muted);min-height:15px;margin:-0.9rem auto 1rem;"></div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button id="begin">Begin</button>
@@ -67,6 +67,7 @@ const TIN={gules:"#A93638",azure:"#27538D",vert:"#2E7A46",sable:"#2A2723",purpur
 const MET={or:"#E3B33C",argent:"#EFEBDD"};
 const INK="#3a342a",PAPER="#F6F2E6";
 let hatch=false,paint=false;
+let pace=1;
 function ensurePaintDefs(){
  if(document.getElementById("pdefs"))return;
  const d=document.createElement("div");d.id="pdefs";d.style.cssText="position:absolute;width:0;height:0;overflow:hidden";
@@ -111,14 +112,27 @@ const ICONS={
  award:'<circle cx="12" cy="9" r="5"/><path d="M9.5 13.5 8 21l4-2.4L16 21l-1.5-7.5"/>',
  back:'<path d="M19 12H5M11 6l-6 6 6 6"/>',
  refresh:'<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4.5h-4.5"/>',
- copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>'
+ copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+ pace1:'<path d="M6.5 3.5h11M6.5 20.5h11M8 3.5v2c0 2.6 2.5 4 4 6.5 1.5-2.5 4-3.9 4-6.5v-2M8 20.5v-2c0-2.6 2.5-4 4-6.5 1.5 2.5 4 3.9 4 6.5v2"/>',
+ pace2:'<path d="M6.5 3.5h11M6.5 20.5h11M8 3.5v2c0 2.6 2.5 4 4 6.5 1.5-2.5 4-3.9 4-6.5v-2M8 20.5v-2c0-2.6 2.5-4 4-6.5 1.5 2.5 4 3.9 4 6.5v2"/><path d="M10.2 17.8h3.6"/>'
 };
 function IC(n,sz,mr){sz=sz||16;return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px;margin-right:'+(mr===undefined?6:mr)+'px">'+ICONS[n]+'</svg>';}
-const PLUR={lion:"lions",wolf:"wolves",stag:"stags",unicorn:"unicorns",griffin:"griffins"};
+const PLUR={lion:"lions",wolf:"wolves",stag:"stags",unicorn:"unicorns",griffin:"griffins",wyvern:"wyverns"};
 const cap=s=>s[0].toUpperCase()+s.slice(1);
 function shade(hex,f){const n=parseInt(hex.slice(1),16);const r=Math.round(((n>>16)&255)*f),g=Math.round(((n>>8)&255)*f),b=Math.round((n&255)*f);return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
 const SH="M8,6 H92 V50 C92,82 74,100 50,110 C26,100 8,82 8,50 Z";
 const DIVS={pale:{a:"M0,0 H50 V116 H0 Z",b:"M50,0 H100 V116 H50 Z"},fess:{a:"M0,0 H100 V54 H0 Z",b:"M0,54 H100 V116 H0 Z"},chevron:{a:"M0,0 H100 V84 L50,48 L0,84 Z",b:"M0,84 L50,48 L100,84 V116 H0 Z"},bend:{a:"M0,0 H100 V116 Z",b:"M0,0 L100,116 H0 Z"},quarterly:{a:"M0,0 H50 V58 H0 Z M50,58 H100 V116 H50 Z",b:"M50,0 H100 V58 H50 Z M0,58 H50 V116 H0 Z"}};
+const ORDS={
+ chief:"M0,0 H100 V34 H0 Z",
+ fess:"M0,42 H100 V70 H0 Z",
+ pale:"M36,0 H64 V116 H36 Z",
+ bend:"M10.6,-9.1 L110.6,106.9 L89.4,125.1 L-10.6,9.1 Z",
+ chevron:"M0,78 L50,40 L100,78 L100,100 L50,62 L0,100 Z",
+ cross:"M36,0 H64 V42 H100 V70 H64 V116 H36 V70 H0 V42 H36 Z",
+ saltire:["M10.6,-9.1 L110.6,106.9 L89.4,125.1 L-10.6,9.1 Z","M89.4,-9.1 L-10.6,106.9 L10.6,125.1 L110.6,9.1 Z"]
+};
+const ORDDEF={chief:"a band across the top of the shield",fess:"a horizontal band across the middle",pale:"a vertical band down the middle",bend:"a diagonal band from dexter chief to sinister base",chevron:"an inverted V rising to the center",cross:"a cross throughout",saltire:"a diagonal cross throughout"};
+const RND={bezant:{c:"#E3B33C",pl:"bezants",t:"or"},plate:{c:"#EFEBDD",pl:"plates",t:"argent"},torteau:{c:"#A93638",pl:"torteaux",t:"gules"},hurt:{c:"#27538D",pl:"hurts",t:"azure"},pomme:{c:"#2E7A46",pl:"pommes",t:"vert"},pellet:{c:"#2A2723",pl:"pellets",t:"sable"},golpe:{c:"#6C4287",pl:"golpes",t:"purpure"}};
 const LINES=["engrailed","invected","indented","embattled","wavy","nebuly"];
 const LINEDEF={engrailed:"scalloped, the points turned outward",invected:"scalloped, the points turned inward",indented:"cut in a zigzag of teeth",embattled:"crenellated like a castle wall",wavy:"undulating like water",nebuly:"deeply billowed like cloud"};
 const DIVCACHE={};
@@ -242,6 +256,67 @@ const BATT={
  volant:{def:"in flight, wings extended",head:[30,48],
   parts:[{d:"M64,52 L79,57",w0:4.6,w1:1.3},{d:"M50,49 Q44,32 36,22",w0:5.8,w1:1.2},{d:"M52,49 Q61,36 71,29",w0:5.8,w1:1.2},{d:"M36,52 Q50,46 64,52",w0:8,w1:6,p:"belly"},{d:"M26.5,46 Q22.5,46.5 21,49.5",w0:3,w1:0.8}]}
 };
+const WATT={
+ statant:{def:"standing upon its two legs, the wings folded along the back",neck:"M36,52 Q30,45 29,38",head:[28,32],woff:[-3,-8],
+  wing:[{d:"M40,46 Q56,34 72,38",w0:5.5,w1:1},{d:"M41,50 Q56,42 69,45",w0:4.5,w1:1},{d:"M42,53 Q55,48 66,51",w0:3.8,w1:1}],
+  parts:[
+   {d:"M64,54 Q78,60 84,52 Q88,45 84,38",w0:6,w1:1.1,p:"tuft"},
+   {d:"M84,40 l4,-3.5",w0:2.6,w1:0.8},{d:"M83,38 l-1.5,-4.5",w0:2.6,w1:0.8},
+   {d:"M36,52 Q52,46 66,55",w0:9,w1:8,p:"belly"},
+   {d:"M42,55 L40,72",w0:5,w1:3},
+   {d:"M56,57 L56,72",w0:5,w1:3},
+   {d:"M40,71 l-5,1.4",w0:3.8,w1:2},
+   {d:"M56,71 l-5,1.4",w0:3.8,w1:2}
+  ]},
+ rampant:{def:"reared upon its tail, one claw raised to strike, the other drawn back",neck:"M48,38 Q42,29 42,21",head:[41,16],woff:[-5,-9],
+  wing:[{d:"M49,40 Q64,24 80,22",w0:5.5,w1:1},{d:"M50,44 Q65,33 78,33",w0:4.5,w1:1},{d:"M51,48 Q64,42 75,44",w0:4,w1:1}],
+  parts:[
+   {d:"M55,64 Q66,78 78,71 Q86,64 82,54",w0:6.5,w1:1.1,p:"tuft"},
+   {d:"M82,56 l4.5,-3",w0:2.6,w1:0.8},{d:"M81,54 l-1,-5",w0:2.6,w1:0.8},
+   {d:"M48,38 Q55,52 56,65",w0:9,w1:7.5,p:"belly"},
+   {d:"M50,48 Q42,46 35,42",w0:5,w1:2.8},
+   {d:"M35,42 l-4,-2.4",w0:3,w1:1.3},
+   {d:"M35.5,44 l-4.4,0.4",w0:3,w1:1.3},
+   {d:"M51,51 Q45,51 39,49",w0:4.6,w1:2.6},
+   {d:"M39,49 l-4,-2",w0:2.8,w1:1.2},
+   {d:"M39.5,51 l-4.2,0.4",w0:2.8,w1:1.2}
+  ]},
+ sejant:{def:"seated upon the coil of its own tail, the claws stretched before it",neck:"M44,44 Q40,37 40,29",head:[39,24],woff:[-3,-7],
+  wing:[{d:"M44,46 Q58,38 70,42",w0:5.5,w1:1},{d:"M45,50 Q58,45 68,49",w0:4.5,w1:1},{d:"M46,53 Q57,50 65,53",w0:3.8,w1:1}],
+  parts:[
+   {d:"M50,70 Q64,80 76,72 Q82,65 76,59 Q70,55 63,59",w0:6.5,w1:2.4},
+   {d:"M63,59 Q59,62 61,67",w0:2.6,w1:1.1},
+   {d:"M63,58 l4,-3.5",w0:2.6,w1:0.8},{d:"M61.5,57.5 l-2,-4.5",w0:2.6,w1:0.8},
+   {d:"M46,44 Q50,58 50,70",w0:9,w1:7.5,p:"belly"},
+   {d:"M46,63 Q39,68 31,70",w0:5,w1:2.8},
+   {d:"M51,67 Q44,71 36,73",w0:5,w1:2.8},
+   {d:"M31,70 l-4.5,1.2",w0:3.6,w1:1.6},
+   {d:"M36,73 l-4.5,1.2",w0:3.6,w1:1.6}
+  ]}
+};
+function headW(x,y,o,c,ec,lang){
+ let s=ribbon("M"+(x+2)+","+(y-4)+" l4,-6",2.8,0.7,null,c,o,1.2)
+  +ribbon("M"+(x-1)+","+(y-4.5)+" l2.5,-6.5",2.6,0.7,null,c,o,1.2);
+ s+='<circle cx="'+x+'" cy="'+y+'" r="6" fill="'+o+'"/><circle cx="'+(x-4.4)+'" cy="'+(y+1.8)+'" r="3.4" fill="'+o+'"/>';
+ s+='<circle cx="'+x+'" cy="'+y+'" r="4.8" fill="'+c+'"/><circle cx="'+(x-4.4)+'" cy="'+(y+1.8)+'" r="2.3" fill="'+c+'"/>';
+ s+='<path d="M'+(x-6.2)+','+(y+3.4)+' q-2.6,1.2 -3.4,3.4 M'+(x-8)+','+(y+5.2)+' l-1.6,-1.2 M'+(x-8.8)+','+(y+6.4)+' l-1.6,-0.6" stroke="'+lang+'" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+ s+='<circle cx="'+(x-1.6)+'" cy="'+(y-1.4)+'" r="1.1" fill="'+ec+'"/>';
+ return s;
+}
+function chargeW(att,gd,t,eyeC){
+ const a=WATT[att],o=hatch?INK:shade(t,0.52),fc=FL(t);
+ const lang=hatch?INK:(t===TIN.gules?TIN.azure:TIN.gules);
+ const ec=hatch?PAPER:eyeC;
+ const farFc=hatch?fc:shade(t,0.8);
+ const wingMk=fill=>a.wing.map(p=>ribbon(p.d,p.w0,p.w1,null,fill,o,1.5)).join("");
+ let s='<g transform="translate('+a.woff[0]+','+a.woff[1]+')">'+wingMk(farFc)+'</g>';
+ a.parts.forEach(p=>{s+=ribbon(p.d,p.w0,p.w1,p.p,fc,o,p.w0>6?2:1.5);});
+ s+=wingMk(fc);
+ s+=ribbon(a.neck,6.8,4.4,null,fc,o,1.9);
+ s+=headW(a.head[0],a.head[1],o,fc,ec,lang);
+ if(gd){const cc=t===MET.or?TIN.gules:MET.or;s+=gorget(a.neck,hatch?PAPER:cc,hatch?INK:shade(cc,0.55));}
+ return s;
+}
 function headQ(creature,x,y,dr,o,c,eyeC,lang){
  let s="";
  if(creature==="griffin"){
@@ -354,13 +429,34 @@ function chargeB(att,t,eyeC){
  (a.detail||[]).forEach(dd=>{s+='<path d="'+dd+'" fill="none" stroke="'+o+'" stroke-width="1.3" stroke-linecap="round"/>';});
  return s+'<circle cx="'+a.head[0]+'" cy="'+a.head[1]+'" r="6" fill="'+o+'"/><circle cx="'+a.head[0]+'" cy="'+a.head[1]+'" r="4.9" fill="'+fc+'"/><circle cx="'+(a.head[0]-1.6)+'" cy="'+(a.head[1]-1.2)+'" r="1.1" fill="'+ec+'"/>';
 }
-function chargeAny(creature,o,t,eyeC){return creature==="eagle"?chargeB(o.att,t,eyeC):chargeQ(creature,o.att,o.reg,o.gu,o.fk,o.cw,o.nw,o.gd,t,eyeC);}
+function chargeAny(creature,o,t,eyeC){return creature==="eagle"?chargeB(o.att,t,eyeC):creature==="wyvern"?chargeW(o.att,o.gd,t,eyeC):chargeQ(creature,o.att,o.reg,o.gu,o.fk,o.cw,o.nw,o.gd,t,eyeC);}
 function phraseOf(opt){
  if("ln" in opt)return opt.ln?opt.ln:"a plain line";
+ if(opt.ord)return opt.ord;
+ if(opt.rn)return opt.rn;
+ if(opt.hd)return opt.hc+"'s head "+opt.hd;
  if(opt.pair==="facing")return opt.att==="rampant"?"combatant":opt.att+" respectant";
  if(opt.pair==="addorsed")return opt.att+" addorsed";
  if(opt.pair==="plain")return opt.att;
  return opt.att+(opt.gu?" guardant":"")+(opt.reg?" reguardant":"")+(opt.fk?" queue fourch\u00e9e":"")+(opt.nw?" queue nowed":"")+(opt.cw?" coward":"")+(opt.gd?" gorged of a coronet":"");
+}
+function ordMk(name,t,clip){
+ const o=hatch?INK:shade(t,0.55),f=FL(t);
+ const paths=Array.isArray(ORDS[name])?ORDS[name]:[ORDS[name]];
+ let s='<g clip-path="url(#'+clip+')">';
+ paths.forEach(p=>{s+='<path d="'+p+'" fill="'+f+'" stroke="'+o+'" stroke-width="2"/>';});
+ if(paths.length>1)paths.forEach(p=>{s+='<path d="'+p+'" fill="'+f+'"/>';});
+ return s+'</g>';
+}
+function headMk(creature,style,t,eyeC){
+ const o=hatch?INK:shade(t,0.52),fc=FL(t),ec=hatch?PAPER:eyeC;
+ const lang=hatch?INK:(t===TIN.gules?TIN.azure:TIN.gules);
+ let cut;
+ if(style==="couped")cut="M44.8,54 L43.6,64.5 L56.4,64.5 L55.2,54 Z";
+ else cut="M44.8,54 L43.4,63 L45.6,60 L47.4,65.2 L49.6,60.6 L51.8,65.6 L53.6,60.2 L55.6,63.6 L55.2,54 Z";
+ let s='<path d="'+cut+'" fill="'+fc+'" stroke="'+o+'" stroke-width="1.1" stroke-linejoin="round"/>';
+ s+=headQ(creature,50,50,1,o,fc,ec,lang);
+ return '<g transform="translate(50,54) scale(2.05) translate(-50,-52)">'+s+'</g>';
 }
 function computeBordure(){
  try{
@@ -408,7 +504,17 @@ function shieldSVG(creature,opt,fs,tn,bord){
    semeMk='<rect x="8" y="6" width="84" height="104" fill="url(#'+id+'s)" clip-path="url(#'+id+'c)"/>';
   }
   const fldName=fur?cap(fur):cap(fs.f)+(fs.seme?(fs.seme==="or"?" bezanty":" platy"):"");
-  if(opt.pair){
+  if(opt.ord){
+   chargeMk=ordMk(opt.ord,t,id+"c");
+   aria=fldName+", a "+opt.ord+" "+tn;
+  }else if(opt.rn){
+   const rc=RND[opt.rn].c,ro=hatch?INK:shade(rc,0.55);
+   chargeMk='<g clip-path="url(#'+id+'c)">'+[[35,40],[65,40],[50,74]].map(p=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="11.5" fill="'+FL(rc)+'" stroke="'+ro+'" stroke-width="1.8"/>').join("")+'</g>';
+   aria=fldName+", three "+RND[opt.rn].pl;
+  }else if(opt.hd){
+   chargeMk=headMk(opt.hc,opt.hd,t,f);
+   aria=fldName+", a "+opt.hc+"'s head "+opt.hd+" "+tn;
+  }else if(opt.pair){
    const ch=chargeAny(creature,{att:opt.att},t,f);
    const gp=(dx,mir)=>'<g transform="translate('+dx+',2) translate(50,58) scale('+(mir?-0.62:0.62)+',0.62) translate(-50,-58)">'+ch+'</g>';
    if(opt.pair==="facing")chargeMk=gp(-15.5,true)+gp(15.5,false);
@@ -449,7 +555,7 @@ function shieldSVG(creature,opt,fs,tn,bord){
   +(paint?'<rect x="8" y="6" width="84" height="104" fill="#000" filter="url(#pBlotch)" clip-path="url(#'+id+'c)"/><rect x="8" y="6" width="84" height="104" fill="#000" filter="url(#pGrain)" clip-path="url(#'+id+'c)"/></g>':"")
   +depth+'</svg>';
 }
-const F={E3:164.81,F3:174.61,B3:246.94,E4:329.63,Fs4:369.99,B4:493.88,Cs5:554.37,D5:587.33,E5:659.25,Fs5:739.99,A5:880,B5:987.77,Cs6:1108.73,D6:1174.66,E6:1318.51};
+const F={D3:146.83,E3:164.81,F3:174.61,Fs3:185.00,G3:196.00,A3:220.00,B3:246.94,E4:329.63,Fs4:369.99,B4:493.88,Cs5:554.37,D5:587.33,E5:659.25,Fs5:739.99,A5:880,B5:987.77,Cs6:1108.73,D6:1174.66,E6:1318.51};
 const PAT=[F.E4,F.Fs4,F.B4,F.Cs5,F.D5,F.Fs4,F.E4,F.Cs5,F.B4,F.Fs4,F.D5,F.Cs5];
 const EXT={2:[F.D5,F.E5],3:[F.B4,F.Cs5],4:[F.Fs4,F.D5],5:[F.E5,F.B4],6:[F.Cs5,F.D5],7:[F.Fs5,F.E5]};
 let AC=null,master=null,voices=[],SPARK=null,muted=false,noiseBuf=null,dIn=null,vIn=null;
@@ -484,7 +590,7 @@ function initAudio(){
  voices=[
   {pat:PAT.slice(),iv:0.19,vol:0.05,pan:-0.4,next:t0,i:0,on:true,kind:"mallet",dur:0.4},
   {pat:PAT.slice(),iv:0.19*1.009,vol:0.05,pan:0.4,next:t0,i:0,on:true,kind:"mallet",dur:0.4},
-  {pat:[F.E3,F.E3,F.B3,F.E3],iv:0.76,vol:0.085,pan:0,next:t0,i:0,on:false,kind:"bass",dur:0.75},
+  {pat:[F.E3,F.Fs3,F.G3,F.B3],iv:0.76,vol:0.085,pan:0,next:t0,i:0,on:false,kind:"bass",dur:0.75,fifth:false},
   {pat:[F.E5,F.Cs5,F.B4],iv:0.285,vol:0.032,pan:0.15,next:t0,i:0,on:false,kind:"mallet",dur:0.35},
   {pat:[F.B5,F.A5,F.Fs5,F.A5],iv:1.14,vol:0.03,pan:-0.15,next:t0,i:0,on:false,kind:"mallet",dur:1.1}
  ];
@@ -497,6 +603,7 @@ function resetMusic(){
  const s=AC.currentTime+0.3;
  [0,1].forEach(k=>{voices[k].i=0;voices[k].next=s;});
  voices.forEach((v,i)=>{if(i>1)v.on=false;});
+ if(voices[2])voices[2].fifth=false;
  if(SPARK){SPARK.on=false;SPARK.vol=0;SPARK.next=s;SPARK.i=0;SPARK.iv=0.57;SPARK.fifth=false;SPARK.pat=[F.E5,F.B4,F.D5,F.Cs5];}
 }
 function growPattern(lv){
@@ -504,6 +611,7 @@ function growPattern(lv){
  voices[0].pat=voices[0].pat.concat(EXT[lv]);
  voices[1].pat=voices[0].pat.slice();
  if(SPARK){SPARK.iv=0.57+0.08*(lv-1);if(lv>=4){SPARK.fifth=true;SPARK.pat=[F.E5,F.B4,F.Fs5,F.B4];}}
+ if(lv>=5)voices[2].fifth=true;
  if(lv===7){voices[0].iv=0.176;voices[1].iv=0.176*1.009;}
  const s=AC.currentTime+0.3;
  [0,1].forEach(k=>{voices[k].i=0;voices[k].next=s;});
@@ -534,7 +642,7 @@ function tone(f,t,d,v,pan,kind){
 }
 function sched(){
  if(!AC)return;const ahead=AC.currentTime+0.15;
- voices.forEach(v=>{while(v.next<ahead){if(v.on)tone(v.pat[v.i%v.pat.length],v.next,v.dur,v.vol,v.pan,v.kind);v.i++;v.next+=v.iv;}});
+ voices.forEach(v=>{while(v.next<ahead){if(v.on){const vf=v.pat[v.i%v.pat.length];tone(vf,v.next,v.dur,v.vol,v.pan,v.kind);if(v.fifth)tone(vf*1.5,v.next,v.dur,v.vol*0.6,v.pan,v.kind);}v.i++;v.next+=v.iv;}});
  if(SPARK)while(SPARK.next<ahead){if(SPARK.on&&SPARK.vol>0.001){const sf=SPARK.pat[SPARK.i%SPARK.pat.length];tone(sf,SPARK.next,SPARK.dur,SPARK.vol,SPARK.pan,SPARK.kind);if(SPARK.fifth)tone(sf*1.5,SPARK.next,SPARK.dur,SPARK.vol*0.62,SPARK.pan-0.28,SPARK.kind);}SPARK.i++;SPARK.next+=SPARK.iv;}
 }
 function playGood(){if(!AC)return;const t=AC.currentTime;[F.E5,F.Fs5,F.B5].forEach((f,i)=>tone(f,t+i*0.07,0.5,0.09,0,"mallet"));}
@@ -546,12 +654,22 @@ function playBad(){
 }
 const CAPSTONE=50;
 const RANKS=["Page","Esquire","Pursuivant","Herald","King of arms","Garter king of arms","Earl marshal"];
-const RANKMSG={2:"The pattern grows by two notes, and fields of ermine may appear. ",3:"From here, beasts may turn reguardant or guardant, and the college may demand a blazon of you. ",4:"Your shields gain a bordure engrailed, fields may part counterchanged, and vair joins the furs. ",5:"Paired beasts take the field, tails may fork \u2014 or hang coward \u2014 and lines of partition grow ornate. ",6:"A bonus rank \u2014 beasts may be gorged of a coronet, tails tied nowed, and fields sown bezanty or furred ermines. ",7:"The Earl Marshal presides \u2014 the pattern quickens. "};
+const RANKMSG={2:"The pattern grows by two notes; ermine, ordinaries, and roundels take the field. ",3:"From here, beasts may turn reguardant or guardant, heads may be borne erased or couped, and the college may demand a blazon of you. ",4:"Your shields gain a bordure engrailed, fields may part counterchanged, and vair joins the furs. ",5:"Paired beasts take the field, tails may fork \u2014 or hang coward \u2014 lines of partition grow ornate, and the wyvern stirs. ",6:"A bonus rank \u2014 beasts may be gorged of a coronet, tails tied nowed, and fields sown bezanty or furred ermines. ",7:"The Earl Marshal presides \u2014 the pattern quickens. "};
 const QUADS=["lion","wolf","stag","unicorn","griffin"];
 const CONF=[["statant","passant","courant"],["rampant","salient"],["couchant","dormant","sejant","sejant erect"]];
 let score=0,streak=0,best=0,lives=3,correctTotal=0,level=1,current=null,locked=false;
 let rng=Math.random,daily=false,dailyStr="",seedVal=0;
-const STORE=(typeof window!=="undefined"&&window.storage)?window.storage:null;
+const STORE=(function(){
+ if(typeof window!=="undefined"&&window.storage)return window.storage;
+ try{
+  if(typeof localStorage==="undefined")return null;
+  localStorage.setItem("blazon:probe","1");localStorage.removeItem("blazon:probe");
+  return {
+   get:async k=>{const v=localStorage.getItem(k);return v===null?null:{key:k,value:v};},
+   set:async(k,v)=>{localStorage.setItem(k,String(v));return {key:k,value:String(v)};}
+  };
+ }catch(e){return null;}
+})();
 let REC={bs:0,bk:0,ac:0},DAILY_DONE=null;
 let CONFU={att:{},mod:{}};
 function saveConfusion(){if(!STORE)return;try{STORE.set("blazon:confusion",JSON.stringify(CONFU));}catch(e){}}
@@ -576,6 +694,7 @@ async function loadRecords(){
  if(!STORE)return;
  try{const r=await STORE.get("blazon:records");if(r&&r.value)REC=Object.assign(REC,JSON.parse(r.value));}catch(e){}
  try{const r=await STORE.get("blazon:daily");if(r&&r.value){const d=JSON.parse(r.value);if(d.date===todayStr())DAILY_DONE=d;}}catch(e){}
+ try{const r=await STORE.get("blazon:pace");if(r&&r.value)pace=parseFloat(r.value)||1;}catch(e){}
  try{const r=await STORE.get("blazon:confusion");if(r&&r.value){const d=JSON.parse(r.value);CONFU={att:d.att||{},mod:d.mod||{}};}}catch(e){}
  paintRecords();
 }
@@ -643,7 +762,10 @@ const pick=a=>a[Math.floor(rng()*a.length)];
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function defOf(opt){
  if("ln" in opt)return opt.ln?LINEDEF[opt.ln]:"a straight, unornamented line";
- const base=current.creature==="eagle"?BATT:QATT;
+ if(opt.ord)return ORDDEF[opt.ord];
+ if(opt.rn)return "a roundel "+RND[opt.rn].t;
+ if(opt.hd)return opt.hd==="erased"?"the head torn from the body, its edge left ragged":"the head cut clean away with a straight line";
+ const base=current.creature==="eagle"?BATT:current.creature==="wyvern"?WATT:QATT;
  let s=base[opt.att].def;
  if(opt.gu)s+="; guardant, the face turned toward the viewer";
  if(opt.reg)s+="; reguardant, the head turned to gaze behind";
@@ -671,19 +793,25 @@ function renderHUD(){
  '<div><div class="stat">Lives</div><span aria-label="'+lives+' of 3 lives remaining" style="display:inline-block;margin-top:3px;">'+hearts+'</span></div>'+
  '<div style="margin-left:auto;display:flex;gap:8px;align-items:center;margin-top:4px;">'+
  '<button id="stylebtn" aria-label="Shield style: '+styleName()+'. Change style" style="padding:6px 9px;">'+IC(styleIcon(),16,0)+'</button>'+
+ '<button id="pacebtn" aria-label="Study pace: '+(pace>1?"unhurried":"brisk")+'. Change pace" style="padding:6px 9px;">'+IC(pace>1?"pace2":"pace1",16,0)+'</button>'+
  '<button id="mute" aria-label="Toggle sound" style="padding:6px 9px;">'+IC(muted?"volumeoff":"volume",16,0)+'</button></div></div>';
  document.getElementById("mute").onclick=()=>{muted=!muted;if(master)master.gain.value=muted?0:0.9;renderHUD();};
+ document.getElementById("pacebtn").onclick=()=>{pace=pace>1?1:1.7;if(STORE)try{STORE.set("blazon:pace",String(pace));}catch(e){}renderHUD();};
  document.getElementById("stylebtn").onclick=()=>{cycleStyle();document.querySelectorAll(".opt").forEach(o=>{const sv=o.querySelector("svg");if(sv&&current)sv.outerHTML=shieldSVG(current.creature,o._opt,current.fs,current.tn,current.bord);});const rs=document.getElementById("rshield");if(rs&&current)rs.innerHTML=shieldSVG(current.creature,current.target,current.fs,current.tn,current.bord);renderHUD();};
 }
 function newRound(){
  locked=false;
  let weakKey=null;
  const isBird=rng()<0.2;
- let creature=isBird?"eagle":pick(QUADS);
- const pool=isBird?Object.keys(BATT):Object.keys(QATT);
+ let creature=isBird?"eagle":(level>=5&&rng()<0.1?"wyvern":pick(QUADS));
+ const pool=isBird?Object.keys(BATT):creature==="wyvern"?Object.keys(WATT):Object.keys(QATT);
  let mode="plain";
- if(level>=3&&rng()<0.16)mode="reverse";
- else if(level>=5&&rng()<0.22)mode="lines";
+ if(creature==="wyvern")mode="plain";
+ else if(level>=3&&rng()<0.15)mode="reverse";
+ else if(level>=2&&rng()<0.13)mode="ord";
+ else if(level>=2&&rng()<0.1)mode="roundel";
+ else if(!isBird&&level>=3&&rng()<0.12)mode="head";
+ else if(level>=5&&rng()<0.2)mode="lines";
  else if(!isBird&&level>=5&&rng()<0.26)mode="pair";
  else if(level>=4&&rng()<0.26)mode="counter";
  else if(!isBird&&level>=3&&rng()<0.42)mode="mod";
@@ -693,7 +821,9 @@ function newRound(){
   const dv=mode==="lines"?pick(["pale","fess","chevron","bend"]):pick(Object.keys(DIVS));
   fs={type:"div",div:dv,a:swap?col:m,b:swap?m:col};tn="counterchanged";
   if(mode==="counter"&&level>=6&&dv!=="quarterly"&&rng()<0.35)fs.ln=pick(LINES);
- }else if(level>=6&&mode!=="pair"&&rng()<0.3){
+ }else if(mode==="roundel"){
+  fs={type:"plain",f:pick(Object.keys(MET))};tn=pick(Object.keys(TIN));
+ }else if(level>=6&&mode!=="pair"&&mode!=="ord"&&mode!=="head"&&rng()<0.3){
   const sm=pick(Object.keys(MET));
   fs={type:"plain",f:pick(Object.keys(TIN)),seme:sm};
   tn=sm==="or"?"argent":"or";
@@ -708,7 +838,18 @@ function newRound(){
   tn=rev?pick(Object.keys(MET)):pick(Object.keys(TIN));
  }
  let opts,target;
- if(mode==="reverse"){
+ if(mode==="ord"){
+  opts=shuffle(shuffle(Object.keys(ORDS)).slice(0,4).map(k=>({ord:k})));
+  target=pick(opts);
+ }else if(mode==="roundel"){
+  const cands=Object.keys(RND).filter(k=>RND[k].c!==MET[fs.f]);
+  opts=shuffle(shuffle(cands).slice(0,4).map(k=>({rn:k})));
+  target=pick(opts);
+ }else if(mode==="head"){
+  const A=pick(QUADS),B=pick(QUADS.filter(x=>x!==A));
+  opts=shuffle([{hd:"erased",hc:A},{hd:"couped",hc:A},{hd:"erased",hc:B},{hd:"couped",hc:B}]);
+  target=pick(opts);
+ }else if(mode==="reverse"){
   const T={att:pick(pool)};
   if(!isBird&&rng()<0.5){
    const mp=level>=6?["reg","gu","fk","cw","nw","gd"]:(level>=5?["reg","gu","fk","cw"]:["reg","gu"]);
@@ -764,7 +905,7 @@ function newRound(){
   const wp=daily?null:weakPair(pool);
   if(wp&&rng()<0.45){tAtt=wp[Math.floor(rng()*2)];weakKey=wp.join("|");}
   let atts;
-  if(!isBird&&level>=2){
+  if(!isBird&&creature!=="wyvern"&&level>=2){
    const g=CONF.find(g=>g.includes(tAtt));
    atts=[...new Set([tAtt,...shuffle(g.filter(x=>x!==tAtt)),...shuffle(pool.filter(x=>!g.includes(x)))])].slice(0,n);
   }else{atts=[tAtt,...shuffle(pool.filter(x=>x!==tAtt))].slice(0,n);}
@@ -793,8 +934,13 @@ function newRound(){
   });
   return;
  }
+ let rest;
+ if(target.ord)rest='a <span style="font-style:italic">'+target.ord+'</span> '+tn;
+ else if(target.rn)rest='three <span style="font-style:italic">'+RND[target.rn].pl+'</span>';
+ else if(target.hd)rest='a '+target.hc+"'s head "+'<span style="font-style:italic">'+target.hd+'</span> '+tn;
+ else rest=subj+' <span style="font-style:italic">'+phraseOf(target)+'</span> '+tn;
  g.innerHTML='<div class="blz">'+
- '<span class="dc">'+fldName[0]+'</span>'+fldName.slice(1)+', '+subj+' <span style="font-style:italic">'+phraseOf(target)+'</span> '+tn+'</div>'+
+ '<span class="dc">'+fldName[0]+'</span>'+fldName.slice(1)+', '+rest+'</div>'+
  '<div id="opts" style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;"></div>'+
  '<div id="fb" style="text-align:center;font-size:13px;color:var(--text-secondary);min-height:42px;margin-top:1rem;line-height:1.5;"></div>';
  const wrap=document.getElementById("opts");
@@ -819,6 +965,9 @@ function showZoom(opt){
 }
 function isSame(a,b){
  if(("ln" in a)||("ln" in b))return a.att===b.att&&(a.ln||null)===(b.ln||null);
+ if(a.ord||b.ord)return a.ord===b.ord;
+ if(a.rn||b.rn)return a.rn===b.rn;
+ if(a.hd||b.hd)return a.hd===b.hd&&a.hc===b.hc;
  return a.att===b.att&&!!a.reg===!!b.reg&&!!a.gu===!!b.gu&&!!a.fk===!!b.fk&&!!a.cw===!!b.cw&&!!a.nw===!!b.nw&&!!a.gd===!!b.gd&&(a.pair||null)===(b.pair||null);}
 function answer(opt,el){
  if(locked)return;locked=true;
@@ -847,6 +996,9 @@ function answer(opt,el){
   lives--;streak=0;playBad();sparkSet(0);
   const T=current.target;
   if(("ln" in T)||("ln" in opt)){const k=["line "+(T.ln||"plain"),"line "+(opt.ln||"plain")].sort().join("|");CONFU.att[k]=Math.min(9,(CONFU.att[k]||0)+1);}
+  else if(T.ord||opt.ord){const k=[T.ord,opt.ord].sort().join("|");CONFU.att[k]=Math.min(9,(CONFU.att[k]||0)+1);}
+  else if(T.rn||opt.rn){const k=[T.rn,opt.rn].sort().join("|");CONFU.att[k]=Math.min(9,(CONFU.att[k]||0)+1);}
+  else if(T.hd||opt.hd){const k=[T.hc+" head "+T.hd,opt.hc+" head "+opt.hd].sort().join("|");CONFU.att[k]=Math.min(9,(CONFU.att[k]||0)+1);}
   else if(T.att!==opt.att){const k=[T.att,opt.att].sort().join("|");CONFU.att[k]=Math.min(9,(CONFU.att[k]||0)+1);}
   else ["gu","reg","fk","cw","nw","gd"].forEach(m=>{if(!!T[m]!==!!opt[m])CONFU.mod[m]=Math.min(9,(CONFU.mod[m]||0)+1);});
   saveConfusion();
@@ -855,7 +1007,7 @@ function answer(opt,el){
  renderHUD();
  if(right&&correctTotal>=CAPSTONE){setTimeout(showAccolade,2600);return;}
  if(promoted)showCeremony();
- setTimeout(()=>{if(lives<=0)gameOver();else newRound();},promoted?4600:(right?2200:5000));
+ setTimeout(()=>{if(lives<=0)gameOver();else newRound();},Math.round((promoted?4600:(right?2200:5000))*pace));
 }
 function showCeremony(){
  const g=document.getElementById("game");
@@ -882,18 +1034,19 @@ function grantArms(){
  let h=0;for(let i=0;i<seedStr.length;i++)h=(h*31+seedStr.charCodeAt(i))|0;
  const r=mulberry32(h);
  const gp=a=>a[Math.floor(r()*a.length)];
- const creature=r()<0.14?"eagle":gp(QUADS);
- const isB=creature==="eagle";
- let pool=isB?Object.keys(BATT):Object.keys(QATT);
+ const cr=r();
+ const creature=cr<0.12?"eagle":cr<0.22?"wyvern":gp(QUADS);
+ const isB=creature==="eagle",isW=creature==="wyvern";
+ let pool=isB?Object.keys(BATT):isW?Object.keys(WATT):Object.keys(QATT);
  const opt={};
- if(!isB){
+ if(!isB&&!isW){
   const m=r();
   if(m<0.16){opt.gu=true;pool=pool.filter(a=>a!=="dormant");}
   else if(m<0.32){opt.reg=true;pool=pool.filter(a=>a!=="dormant");}
   else if(m<0.46)opt.fk=true;
   else if(m<0.58&&creature!=="stag"&&creature!=="unicorn")opt.nw=true;
-  if(lives===3)opt.gd=true;
  }
+ if(!isB&&lives===3)opt.gd=true;
  opt.att=gp(pool);
  let fs,tn;
  const fr=r();
@@ -1006,6 +1159,11 @@ function buildARM(){
  arm.push({c:"lion",o:{att:"sejant",ln:"embattled"},fs:{type:"div",div:"fess",a:"argent",b:"gules"},tn:"counterchanged",n:"embattled",d:LINEDEF.embattled});
  arm.push({c:"unicorn",o:{att:"rampant",ln:"wavy"},fs:{type:"div",div:"bend",a:"or",b:"azure"},tn:"counterchanged",n:"wavy",d:LINEDEF.wavy});
  arm.push({c:"stag",o:{att:"statant",ln:"nebuly"},fs:{type:"div",div:"chevron",a:"argent",b:"purpure"},tn:"counterchanged",n:"nebuly",d:LINEDEF.nebuly});
+ Object.keys(ORDS).forEach(k=>arm.push({c:"lion",o:{ord:k},fs:{type:"plain",f:"or"},tn:"gules",n:k,d:ORDDEF[k]}));
+ arm.push({c:"lion",o:{hd:"erased",hc:"lion"},fs:{type:"plain",f:"or"},tn:"gules",n:"erased",d:"the head torn from the body, its edge left ragged"});
+ arm.push({c:"lion",o:{hd:"couped",hc:"wolf"},fs:{type:"plain",f:"argent"},tn:"azure",n:"couped",d:"the head cut clean away with a straight line"});
+ Object.keys(RND).forEach(k=>{const c=RND[k].c;const fld=(c==="#E3B33C")?"azure":(c==="#EFEBDD")?"gules":(k==="pellet")?"argent":"or";arm.push({c:"lion",o:{rn:k},fs:{type:"plain",f:fld},tn:"gules",n:k,d:"a roundel "+RND[k].t});});
+ arm.push({c:"wyvern",o:{att:"rampant"},n:"wyvern",d:"a dragon of but two legs, the tail a serpent"});
  return arm;
 }
 function showArmory(){
